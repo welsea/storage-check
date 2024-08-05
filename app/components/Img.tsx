@@ -5,7 +5,7 @@ import eg2 from "../../public/eg2.jpg";
 function Img(props: any) {
     const { img } = props;
     return (
-        <div className="m-2 w-5/12">
+        <div className="m-2 w-8/12">
             <Image
                 src={eg2}
                 alt="logo"

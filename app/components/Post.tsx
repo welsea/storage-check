@@ -1,15 +1,18 @@
 import React from "react";
 import Note from "./Note";
 import Img from "./Img";
-import Date from "./Date";
+import Info from "./Info";
 
 function Post(props: any) {
     const { content } = props;
     return (
-        <div className="flex w-fit my-16">
-            <Date date={content.date} />
-            <Img img={content.img} />
-            {content && <Note note={content.note} username={content.user} />}
+        <div className="post my-16 border border-black">
+            <Info />
+            <div className="flex flex-nowrap justify-around items-center">
+                <Img img={content.img} />
+                {content && <Note note={content.note} username={content.user} />}
+            </div>
+
         </div>
     );
 }

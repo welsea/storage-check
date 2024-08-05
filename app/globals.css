@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  background-color: rgb(255,255,255);
+  background-color: rgb(255, 255, 255);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -18,16 +18,89 @@
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
+  background: linear-gradient(to bottom,
       transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+      rgb(var(--background-end-rgb))) rgb(var(--background-start-rgb));
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
+}
+
+
+.bgWrap {
+  position: fixed;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  z-index: -1;
+}
+
+.bgInput {
+  margin: 0;
+  text-align: center;
+  padding-top: 40vh;
+}
+
+.pwInput {
+  padding: 0.5em 4em;
+  /* border-radius: 0.2em; */
+  /* border: 1px solid #d2b2b2; */
+  background: black;
+  text-align: center;
+  color: white;
+}
+
+.layout{
+}
+
+.log{
+  width: 70%;
+  margin: auto;
+}
+
+.post table, th, td {
+  border-bottom: 1px solid #919191;
+  width: 50%;
+}
+
+.post th:first-child, td:first-child{
+  border-right: 1px solid #919191;
+}
+
+.post table{
+  width: 100%;
+  text-align: center;
+}
+
+
+
+.radio-button {
+  padding: 0.5em 1em;
+  border: 1px solid #000;
+  border-radius: 4px;
+  cursor: pointer;
+  user-select: none;
+  line-height: 3em;
+  margin-right: 1em;
+}
+
+.radio-button input[type="radio"] {
+  display: none;
+}
+
+.radio-button.selected {
+  background-color: #000;
+  color: white;
+  border-color: #000;
+}
+
+.radio-button:hover {
+  border-color: #000000;
+}
+
+.radio-button.selected:hover {
+  background-color: #000000;
 }
