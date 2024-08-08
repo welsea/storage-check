@@ -1,38 +1,33 @@
-"use client";
-import { createContext, useState } from "react";
-import { Main } from "../app/pages/main";
-import Image from "next/image";
-import eg2 from "../public/eg2.jpg"
-export const MainContext = createContext<any>(null)
+"use client"
+import Link from 'next/link';
+import Image from 'next/image';
+import eg1 from '../public/eg1.jpg'
+import { useState } from 'react';
+import Lists from './ui/Lists';
+import '@/app/ui/global.css'
+export default function Page() {
+  const [show, setShow] = useState<boolean>(false)
 
-export default function Home() {
-    const [username, setUsername] = useState("njaal")
-    const [show, setShow] = useState<boolean>(false)
-    const [pw, setPW] = useState<string>("")
-    const [showError, setShowError] = useState<boolean>(false)
-    const msg = "WRONG WRONG WRONG"
-    function checkPW(e: any) {
-        let input = e.target.value
-        if (input === "naess") {
-            setShow(true)
-            setShowError(false)
-        } else {
-            setShowError(true)
-            setShow(false)
-        }
+  function checkPW(e: any) {
+    let input = e.target.value
+    if (input === "naess") {
+        setShow(true)
+    } else {
+        setShow(false)
     }
-    return (
-        <MainContext.Provider value={{ user: username }}>
+}
+  return (
+    <main className="flex min-h-screen flex-col p-6">
             <main>
                 {
                     show ?
-                        <Main />
+                        <Lists />
                         :
                         <div>
                             <div className="bgWrap">
                                 <Image
                                     alt="cabin"
-                                    src={eg2}
+                                    src={eg1}
                                     quality={100}
                                     fill
                                     sizes="100vw"
@@ -49,7 +44,6 @@ export default function Home() {
                         </div>
                 }
             </main>
-        </MainContext.Provider>
-
-    );
+    </main>
+  );
 }

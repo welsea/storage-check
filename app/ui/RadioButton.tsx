@@ -1,4 +1,4 @@
-export function RadioButton(props:any) {
+export default function RadioButton(props:any) {
     const {value,selectedValue,onChange}=props
     return (
         <label className={`radio-button ${selectedValue === value ? 'selected' : ''}`}>
