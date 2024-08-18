@@ -3,10 +3,8 @@ import eg1 from '../public/eg1.jpg'
 import '@/app/ui/global.css'
 export default function Page() {
     return (
-        <main className="flex min-h-screen flex-col p-6">
+        <main className="">
             <main>
-
-                <div>
                     <div className="bgWrap">
                         <Image
                             alt="cabin"
@@ -24,7 +22,6 @@ export default function Page() {
                     <div className="bgInput">
                         <input type="password" autoFocus className="pwInput" />
                     </div>
-                </div>
             </main>
         </main>
     );
