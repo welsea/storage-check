@@ -2,6 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+  .sm-btn {
+    @apply border border-black rounded-md px-2 py-1 mx-2 my-1 hover:bg-black hover:text-white;
+  }
+  .bg-btn{
+    @apply px-4 py-2 rounded-md border mx-1;
+  }
+  .sm-input{
+    @apply py-1 px-1 rounded-md mx-1;
+  }
+
+  .btn-green{
+    @apply bg-green-900 text-white hover:bg-white hover:border-green-900 hover:text-green-900 ;
+  }
+
+  .btn-red{
+    @apply border-red-900 text-red-900 hover:bg-red-900 hover:text-white;
+  }
+}
+
 input[type='number'] {
   -moz-appearance: textfield;
   appearance: textfield;
