@@ -5,10 +5,8 @@ import {
 
 export async function fetchLocation() {
   try {
-
-    const data = await sql<Location>`SELECT location_name FROM locations`;
-    let result=data.rows.map((item)=>item.location_name)
-    return result;
+    const data = await sql<Location>`SELECT location_name,location_id FROM locations`;
+    return data.rows;
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch location data.');
@@ -18,8 +16,8 @@ export async function fetchLocation() {
 export async function fetchCategory() {
   try {
     const data = await sql<Category>`
-      SELECT category_name FROM categories`;
-    let result=data.rows.map((item)=>item.category_name)
+      SELECT category_name,category_id FROM categories`;
+    let result=data.rows
     return result;
   } catch (error) {
     console.error('Database Error:', error);
