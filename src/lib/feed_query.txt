@@ -1,0 +1,49 @@
+
+CREATE TABLE category(
+    id int primary key GENERATED ALWAYS AS IDENTITY,
+    name varchar(255) UNIQUE,
+)
+
+
+CREATE TABLE items(
+    id int primary key GENERATED ALWAYS AS IDENTITY,
+    name varchar(255) UNIQUE,
+    category_id bigint not null DEFAULT 1 REFERENCES category(id)
+)
+
+CREATE TABLE exist_items(
+    exist_id int primary key GENERATED ALWAYS AS IDENTITY,
+    item_id int REFERENCES items(id),
+    location_id int REFERENCES  locations(id),
+    quantity int NOT NULL DEFAULT 1,
+    last_updated timestamp DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(location_id, item_id)
+)
+
+
+
+
+create table users(
+    id int primary key GENERATED ALWAYS AS IDENTITY,
+    username varchar(255) not null UNIQUE,
+    password varchar(255) NOT NULL,
+    last_active timestamp DEFAULT CURRENT_TIMESTAMP
+)
+
+
+CREATE TABLE user_session (
+    id TEXT NOT NULL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    expires_at TIMESTAMPTZ NOT NULL,
+);
+
+
+create table locations(
+    id int primary key GENERATED ALWAYS AS IDENTITY,
+    name varchar(255) not null UNIQUE,
+    last_updated timestamp DEFAULT CURRENT_TIMESTAMP,
+    last_updated_by bigint not null REFERENCES users(id),
+    cover verchar(255)
+)
+
+

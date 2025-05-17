@@ -3,3 +3,6 @@ node_modules
 .env.example
 .next
 .DS_Store
+.env
+.svelte-kit
+pnpm-lock.yaml
