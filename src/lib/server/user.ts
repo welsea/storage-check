@@ -1,8 +1,8 @@
 import postgres from 'postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { DATABASE_URL } from '$env/static/private';
 import type { Item } from './types';
 
-const sql = postgres(POSTGRES_URL);
+const sql = postgres(DATABASE_URL);
 
 export async function getUserName(id: FormDataEntryValue | null) {
 	if (id === null || id === '') {

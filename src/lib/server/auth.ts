@@ -2,9 +2,9 @@ import { genSalt, hash, compare } from 'bcrypt-ts';
 import * as userSession from '$lib/server/session';
 import type { RequestEvent } from '@sveltejs/kit';
 import postgres from 'postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { DATABASE_URL } from '$env/static/private';
 
-const sql = postgres(POSTGRES_URL);
+const sql = postgres(DATABASE_URL);
 
 export async function register(
 	code: FormDataEntryValue | null,

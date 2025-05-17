@@ -4,12 +4,12 @@
  */
 
 import postgres from 'postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { DATABASE_URL } from '$env/static/private';
 import { encodeBase32LowerCaseNoPadding, encodeHexLowerCase } from '@oslojs/encoding';
 import { sha256 } from '@oslojs/crypto/sha2';
 import type { RequestEvent } from '@sveltejs/kit';
 
-const sql = postgres(POSTGRES_URL);
+const sql = postgres(DATABASE_URL);
 
 export function setSessionTokenCookie(event: RequestEvent, token: string, expiresAt: Date): void {
 	event.cookies.set('session', token, {
