@@ -18,4 +18,5 @@ RUN pnpm run build
 
 # Expose the port and run the preview server
 EXPOSE 3000
-CMD ["pnpm", "run", "preview", "--", "--port", "3000", "--host"]
+CMD ["pnpm", "run", "preview", "--host", "0.0.0.0", "--port", "3000"]
+

@@ -10,5 +10,10 @@ export default defineConfig({
 		Icons({
 			compiler: 'svelte'
 		})
-	]
+	],
+	preview: {
+		host: '0.0.0.0',
+		port: 3000,
+		allowedHosts: ['cabin.welsea.site'], // ✅ allow your domain here
+	  },
 });
