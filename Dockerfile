@@ -1,22 +1,28 @@
 FROM node:20
 
-# Install pnpm globally
+# Enable pnpm via Corepack
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
-# Set working directory
+# Set working directory inside the container
 WORKDIR /cabin
 
-# Copy and install dependencies
+# Copy only files needed to install dependencies first (for better caching)
 COPY pnpm-lock.yaml package.json ./
+
+# Install dependencies
 RUN pnpm install
 
 # Copy the rest of the app
 COPY . .
 
-# Build the app
+# Build the SvelteKit app
 RUN pnpm run build
-RUN node --env-file=.env build
-# Expose the port and run the preview server
-EXPOSE 3000
-CMD ["node","build/index.js"]
 
+# Set environment variable — ORIGIN must match your deployed domain
+ENV ORIGIN=https://cabin.welsea.site
+
+# Expose the port the app listens on
+EXPOSE 3000
+
+# Start the app
+CMD ["node", "build"]
