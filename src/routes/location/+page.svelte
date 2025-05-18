@@ -5,7 +5,7 @@
 	let add = $state(false);
 
 	let edit = $state(false);
-	let editId = $state<string>(data.locations[0].id);
+	let editId = $state<string>(data.locations.length > 0 ? data.locations[0].id:'');
 
 	let preview: string | null = $state(null);
 	let fileInput: any = $state();
@@ -76,7 +76,7 @@
 				{/if}
 			</div>
 
-			{#if edit}
+			{#if edit && data.locations.length > 0}
 				<form
 					method="POST"
 					enctype="multipart/form-data"
