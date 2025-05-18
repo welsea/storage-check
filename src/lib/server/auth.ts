@@ -2,7 +2,7 @@ import { genSalt, hash, compare } from 'bcrypt-ts';
 import * as userSession from '$lib/server/session';
 import type { RequestEvent } from '@sveltejs/kit';
 import postgres from 'postgres';
-import { DATABASE_URL } from '$env/static/private';
+import { DATABASE_URL, INVITATION_CODE } from '$env/static/private';
 
 const sql = postgres(DATABASE_URL);
 
@@ -17,7 +17,7 @@ export async function register(
 			message: "Invitation code doesn't exist."
 		};
 	}
-	if (code.toString() !== 'hello_cabin') {
+	if (code.toString() !== INVITATION_CODE) {
 		return {
 			valid: false,
 			message: "Invitation code doesn't exist."

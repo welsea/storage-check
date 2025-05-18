@@ -15,8 +15,8 @@ COPY . .
 
 # Build the app
 RUN pnpm run build
-
+RUN node --env-file=.env build
 # Expose the port and run the preview server
 EXPOSE 3000
-CMD ["pnpm", "run", "preview", "--host", "0.0.0.0", "--port", "3000"]
+CMD ["node","build/index.js"]
 
