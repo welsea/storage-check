@@ -10,6 +10,8 @@
 	let preview: string | null = $state(null);
 	let fileInput: any = $state();
 
+	const S3_URL = "https://cabinweb.s3.fr-par.scw.cloud/images";
+
 	function handleFileSelect() {
 		const file = fileInput.files[0];
 		if (!file || !file.type.startsWith('image/')) return;
@@ -38,7 +40,7 @@
 			<a href="/location/{item.id}-{item.name}">
 				<span class="text-2xl md:text-3xl font-thin">{item.name.toUpperCase()}</span>
 				{#if item.cover}
-					<img class=" object-cover" src={item.cover} alt="cover" loading="lazy" />
+					<img class=" object-cover" src={`${S3_URL}/${item.cover}`} alt="cover" loading="lazy" />
 				{:else}
 					<TdesignHomeFilled width="100%" height="100%" color="grey" />
 				{/if}
