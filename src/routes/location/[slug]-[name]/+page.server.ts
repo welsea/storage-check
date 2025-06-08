@@ -3,9 +3,12 @@ import * as userDB from '$lib/server/user';
 import { fail } from '@sveltejs/kit';
 
 export async function load({ params, parent }) {
+	console.log(parent)
 	const layoutData = await parent();
 	const currentLoc = layoutData.locations.filter((e) => e.id === params.slug)[0];
+	console.log(currentLoc)
 	const data = await db.getList(params.slug);
+	console.log(data)
 	const username = await userDB.getUserName(currentLoc.last_updated_by);
 	const categories = await db.getCategory();
 	return {
