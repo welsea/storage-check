@@ -7,7 +7,7 @@ async function handleImage(image: File, name: string) {
 	const arrayBuffer = await image.arrayBuffer();
 	const nodeBuffer = Buffer.from(arrayBuffer);
 	const processedImageBuffer = await sharp(nodeBuffer)
-		.resize(800)
+		.resize(500)
 		.webp({ quality: 80 })
 		.toBuffer();
 	const result = await uploadImageToS3(processedImageBuffer, name);
