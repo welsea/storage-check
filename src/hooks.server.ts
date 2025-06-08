@@ -8,7 +8,7 @@ import { redirect } from '@sveltejs/kit';
 
 import type { Handle } from '@sveltejs/kit';
 
-const publicPaths = ['/login', '/register', '/reset_password'];
+const publicPaths = ['/login', '/register', '/reset_password','/init_db'];
 
 export const handle: Handle = async ({ event, resolve }) => {
 	const token = event.cookies.get('session') ?? null;
