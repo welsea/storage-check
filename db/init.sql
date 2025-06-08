@@ -33,6 +33,15 @@ CREATE TABLE exist_items (
     UNIQUE(location_id, item_id)
 );
 
+CREATE TABLE need_items (
+    need_id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    item_id INT REFERENCES items(id),
+    location_id INT REFERENCES locations(id),
+    quantity INT NOT NULL DEFAULT 1,
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(location_id, item_id)
+);
+
 CREATE TABLE user_session (
     id TEXT NOT NULL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(id),

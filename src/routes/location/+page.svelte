@@ -10,7 +10,7 @@
 	let preview: string | null = $state(null);
 	let fileInput: any = $state();
 
-	const S3_URL = "https://cabinweb.s3.fr-par.scw.cloud/images";
+	const S3_URL = "https://cabinweb.s3.fr-par.scw.cloud";
 
 	function handleFileSelect() {
 		const file = fileInput.files[0];

@@ -2,10 +2,7 @@ import * as db from "$lib/server/db";
 import { fail } from "@sveltejs/kit";
 import sharp from "sharp";
 import { uploadImageToS3 } from "$lib/server/s3.js";
-export const config = {
-	maxSize: 25 * 1024 * 1024 // 25 MB
-  };
-  
+
 async function handleImage(image: File, name: string) {
 	const arrayBuffer = await image.arrayBuffer();
 	const nodeBuffer = Buffer.from(arrayBuffer);
