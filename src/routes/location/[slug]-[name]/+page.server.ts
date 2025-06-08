@@ -4,19 +4,10 @@ import { fail } from "@sveltejs/kit";
 
 export async function load({ params, parent }) {
 	const layoutData = await parent();
-	console.log(params.slug);
-	console.log(layoutData.locations);
-	console.log(layoutData.locations[0].id == params.slug);
-	console.log(layoutData.locations[0].id === params.slug);
 	const currentLoc = layoutData.locations.filter(
 		(e) => e.id == params.slug
 	)[0];
-	console.log(layoutData.locations.filter(
-		(e) => e.id == params.slug
-	))
-	console.log(currentLoc);
 	const data = await db.getList(params.slug);
-	console.log(data);
 	const username = await userDB.getUserName(currentLoc.last_updated_by);
 	const categories = await db.getCategory();
 	return {

@@ -4,7 +4,6 @@
 	import CatSpeechRight from '$lib/components/CatSpeechRight.svelte';
 
 	let { data, form } = $props();
-	console.log(data)
 
 	let category = $state<string>(data.categories[0].id);
 	let add_category = $state(false);
