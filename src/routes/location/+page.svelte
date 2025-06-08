@@ -40,7 +40,7 @@
 			<a href="/location/{item.id}-{item.name}">
 				<span class="text-2xl md:text-3xl font-thin">{item.name.toUpperCase()}</span>
 				{#if item.cover}
-					<img class=" object-cover" src={`${S3_URL}/${item.cover}`} alt="cover" loading="lazy" />
+					<img class="object-cover aspect-square w-full rounded" src={`${S3_URL}/${item.cover}`} alt="cover" loading="lazy" />
 				{:else}
 					<TdesignHomeFilled width="100%" height="100%" color="grey" />
 				{/if}
