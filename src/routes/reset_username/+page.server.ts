@@ -21,7 +21,7 @@ export const actions = {
 			const result = await auth.reset_username(data.get('username'), event.locals.user!.id);
 			if (result && result.valid) {
 				await auth.logout(event);
-				throw redirect(303, '/login');
+				redirect(303, '/login');
 			}
 
 			return fail(403, {
