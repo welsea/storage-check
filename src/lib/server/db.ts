@@ -1,8 +1,11 @@
 import postgres from 'postgres';
-import { DATABASE_URL } from '$env/static/private';
 import type { Item, LocationItem } from './types';
 
-const sql = postgres(DATABASE_URL);
+const DATABASE_URL = process.env.DATABASE_URL;
+
+const sql = postgres(DATABASE_URL!, {
+	ssl: 'require', // Heroku requires SSL
+  });
 
 export async function getLocations(): Promise<LocationItem[]> {
 	const locations: LocationItem[] = await sql`SELECT * FROM locations`;
