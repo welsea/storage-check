@@ -5,10 +5,10 @@ import { initializeDatabase } from '$lib/init_db';
 const isDev = process.env.NODE_ENV === 'development';
 
 export async function GET() {
-	if (!isDev) {
-		console.log('not dev')
-		return new Response('Not allowed in production', { status: 403 });
-	}
+	// if (!isDev) {
+	// 	console.log('not dev')
+	// 	return new Response('Not allowed in production', { status: 403 });
+	// }
 
 	try {
 		await initializeDatabase();
