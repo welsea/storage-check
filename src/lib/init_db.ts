@@ -1,6 +1,9 @@
 import postgres from 'postgres';
 
-const sql = postgres(process.env.DATABASE_URL || '', { ssl: false });
+const sql = postgres(process.env.DATABASE_URL || '', {
+	ssl: 'require', // Heroku requires SSL
+  });
+
 
 export async function initializeDatabase() {
 	console.log('⏳ Running DB init...');
