@@ -16,7 +16,7 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"format": "prettier --write .",
 		"lint": "prettier --check .",
-		"start": "pnpm run preview"
+		"start": "node build/index.js"
 	},
 	"devDependencies": {
 		"@iconify-json/tdesign": "^1.2.8",
