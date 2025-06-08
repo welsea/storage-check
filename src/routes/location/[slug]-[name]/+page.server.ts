@@ -4,7 +4,9 @@ import { fail } from '@sveltejs/kit';
 
 export async function load({ params, parent }) {
 	const layoutData = await parent();
-	console.log(layoutData)
+	console.log(params.slug)
+	console.log(layoutData.locations)
+	console.log(layoutData.locations[0].id)
 	const currentLoc = layoutData.locations.filter((e) => e.id === params.slug)[0];
 	console.log(currentLoc)
 	const data = await db.getList(params.slug);
