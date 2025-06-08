@@ -59,13 +59,14 @@
 </ul>
 
 <div class="md:mt-40 mt-20 text-right">
-	<button
-		onclick={() => {
-			edit = !edit;
-			add = false;
-		}}>Edit location</button
-	>
-
+	{#if data.locations.length > 0}
+		<button
+			onclick={() => {
+				edit = !edit;
+				add = false;
+			}}>Edit location</button
+		>
+	{/if}
 	{#if edit || add}
 		<div
 			class="border border-dashed w-full py-5 px-5 text-left mt-4 rounded-md flex justify-around flex-wrap"
