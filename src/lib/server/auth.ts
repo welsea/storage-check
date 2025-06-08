@@ -2,9 +2,11 @@ import { genSalt, hash, compare } from 'bcrypt-ts';
 import * as userSession from '$lib/server/session';
 import type { RequestEvent } from '@sveltejs/kit';
 import postgres from 'postgres';
-import { DATABASE_URL, INVITATION_CODE } from '$env/static/private';
+import {  INVITATION_CODE } from '$env/static/private';
 
-const sql = postgres(DATABASE_URL);
+const sql = postgres(process.env.DATABASE_URL || '', {
+	ssl: 'require', // Heroku requires SSL
+  });
 
 export async function register(
 	code: FormDataEntryValue | null,

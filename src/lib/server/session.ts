@@ -9,7 +9,9 @@ import { encodeBase32LowerCaseNoPadding, encodeHexLowerCase } from '@oslojs/enco
 import { sha256 } from '@oslojs/crypto/sha2';
 import type { RequestEvent } from '@sveltejs/kit';
 
-const sql = postgres(DATABASE_URL);
+const sql = postgres(process.env.DATABASE_URL || '', {
+	ssl: 'require', // Heroku requires SSL
+  });
 
 export function setSessionTokenCookie(event: RequestEvent, token: string, expiresAt: Date): void {
 	event.cookies.set('session', token, {
