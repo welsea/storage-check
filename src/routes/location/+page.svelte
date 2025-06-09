@@ -1,20 +1,23 @@
 <script lang="ts">
-	import TdesignHomeFilled from '~icons/tdesign/home-filled';
-	import { enhance } from '$app/forms';
+	import TdesignHomeFilled from "~icons/tdesign/home-filled";
+	import { enhance } from "$app/forms";
 	let { data, form } = $props();
 	let add = $state(false);
 
 	let edit = $state(false);
-	let editId = $state<string>(data.locations.length > 0 ? data.locations[0].id:'');
+	let editId = $state<string>(
+		data.locations.length > 0 ? data.locations[0].id : ""
+	);
 
 	let preview: string | null = $state(null);
 	let fileInput: any = $state();
+	let updating: boolean = $state(false);
 
 	const S3_URL = "https://cabinweb.s3.fr-par.scw.cloud";
 
 	function handleFileSelect() {
 		const file = fileInput.files[0];
-		if (!file || !file.type.startsWith('image/')) return;
+		if (!file || !file.type.startsWith("image/")) return;
 
 		preview = URL.createObjectURL(file);
 	}
@@ -36,19 +39,35 @@
 
 <ul class="mt-2 flex flex-wrap justify-center">
 	{#each data.locations as item}
-		<li class="text-center w-full md:w-2/5 px-3 py-2 rounded-md inline-block mr-2">
+		<li
+			class="text-center w-full md:w-2/5 px-3 py-2 rounded-md inline-block mr-2"
+		>
 			<a href="/location/{item.id}-{item.name}">
-				<span class="text-2xl md:text-3xl font-thin">{item.name.toUpperCase()}</span>
+				<span class="text-2xl md:text-3xl font-thin"
+					>{item.name.toUpperCase()}</span
+				>
 				{#if item.cover}
-					<img class="object-cover aspect-square rounded" src={`${S3_URL}/${item.cover}`} alt="cover" loading="lazy" />
+					<img
+						class="object-cover aspect-square rounded"
+						src={`${S3_URL}/${item.cover}`}
+						alt="cover"
+						loading="lazy"
+					/>
 				{:else}
-					<TdesignHomeFilled width="100%" height="100%" color="grey" />
+					<TdesignHomeFilled
+						width="100%"
+						height="100%"
+						color="grey"
+					/>
 				{/if}
 			</a>
 		</li>
 	{/each}
-	<li class="text-center w-full md:w-2/5 px-3 py-2 border border-dashed border-gray-400 rounded-md inline-block mr-2">
+	<li
+		class="text-center w-full md:w-2/5 px-3 py-2 border border-dashed border-gray-400 rounded-md inline-block mr-2"
+	>
 		<button
+			disabled={!updating}
 			onclick={() => {
 				add = !add;
 				edit = false;
@@ -59,8 +78,14 @@
 </ul>
 
 <div class="md:mt-40 mt-20 text-right">
+	{#if updating}<div class="text-center text-orange-700">
+			Updating database, please wait...
+		</div>
+	{/if}
+
 	{#if data.locations.length > 0}
 		<button
+			disabled={!updating}
 			onclick={() => {
 				edit = !edit;
 				add = false;
@@ -112,7 +137,9 @@
 						>Enter a new name: <input
 							name="name"
 							type="text"
-							defaultValue={data.locations.filter((e) => e.id === editId)[0].name.toUpperCase()}
+							defaultValue={data.locations
+								.filter((e) => e.id === editId)[0]
+								.name.toUpperCase()}
 						/></label
 					>
 					<label
@@ -127,11 +154,15 @@
 						/></label
 					>
 					<div class="text-right w-full mt-5">
-						<button type="submit" class="bg-black text-white" onclick={() => {
-							edit = false;
-							preview = null;
-						}}>Save</button>
 						<button
+							type="submit"
+							class="bg-black text-white"
+							onclick={() => {
+								updating = true;
+							}}>Save</button
+						>
+						<button
+							type="button"
 							class=""
 							onclick={() => {
 								edit = false;
@@ -148,7 +179,9 @@
 					class="w-fit"
 					use:enhance={handleSubmit}
 				>
-					<label class="block mb-5 mt-2">Enter a name: <input name="name" type="text" /></label>
+					<label class="block mb-5 mt-2"
+						>Enter a name: <input name="name" type="text" /></label
+					>
 					<label
 						>Select a cover: <input
 							type="file"
@@ -161,11 +194,15 @@
 						/></label
 					>
 					<div class="text-right w-full mt-5">
-						<button type="submit" class="bg-black text-white" onclick={() => {
-							add = false;
-							preview = null;
-						}}>Save</button>
 						<button
+							type="submit"
+							class="bg-black text-white"
+							onclick={() => {
+								updating = true;
+							}}>Save</button
+						>
+						<button
+							type="button"
 							class=""
 							onclick={() => {
 								add = false;
