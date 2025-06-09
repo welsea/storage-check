@@ -24,14 +24,10 @@
 
 	function handleSubmit() {
 		return async ({ update }: { update: any }) => {
-			updating = true;
-			try {
-				if (preview) URL.revokeObjectURL(preview);
-				preview = null;
-				await update();
-			} finally {
-				updating = false;
-			}
+			if (preview) URL.revokeObjectURL(preview);
+			preview = null;
+			await update();
+			updating = false;
 		};
 	}
 </script>
@@ -160,8 +156,10 @@
 						/></label
 					>
 					<div class="text-right w-full mt-5">
-						<button type="submit" class="bg-black text-white"
-							>Save</button
+						<button
+							type="submit"
+							class="bg-black text-white"
+							onclick={() => (updating = true)}>Save</button
 						>
 						<button
 							type="button"
@@ -196,8 +194,10 @@
 						/></label
 					>
 					<div class="text-right w-full mt-5">
-						<button type="submit" class="bg-black text-white"
-							>Save</button
+						<button
+							type="submit"
+							class="bg-black text-white"
+							onclick={() => (updating = true)}>Save</button
 						>
 						<button
 							type="button"
