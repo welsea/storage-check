@@ -24,9 +24,14 @@
 
 	function handleSubmit() {
 		return async ({ update }: { update: any }) => {
-			if (preview) URL.revokeObjectURL(preview);
-			preview = null;
-			await update();
+			updating = true;
+			try {
+				if (preview) URL.revokeObjectURL(preview);
+				preview = null;
+				await update();
+			} finally {
+				updating = false;
+			}
 		};
 	}
 </script>
@@ -78,7 +83,8 @@
 </ul>
 
 <div class="md:mt-40 mt-20 text-right">
-	{#if updating}<div class="text-center text-orange-700">
+	{#if updating}
+		<div class="text-center text-orange-700">
 			Updating database, please wait...
 		</div>
 	{/if}
@@ -154,12 +160,8 @@
 						/></label
 					>
 					<div class="text-right w-full mt-5">
-						<button
-							type="submit"
-							class="bg-black text-white"
-							onclick={() => {
-								updating = true;
-							}}>Save</button
+						<button type="submit" class="bg-black text-white"
+							>Save</button
 						>
 						<button
 							type="button"
@@ -194,12 +196,8 @@
 						/></label
 					>
 					<div class="text-right w-full mt-5">
-						<button
-							type="submit"
-							class="bg-black text-white"
-							onclick={() => {
-								updating = true;
-							}}>Save</button
+						<button type="submit" class="bg-black text-white"
+							>Save</button
 						>
 						<button
 							type="button"
