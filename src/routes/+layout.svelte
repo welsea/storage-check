@@ -9,7 +9,7 @@
 	{#if data.username}<p>hello, <a href="/user/{data.username}" class="underline">{data.username}</a></p>{/if}
 </nav>
 
-<div class="min-h-full md:min-h-fit md:h-11/12 py-5 px-5">
+<div class="min-h-full md:min-h-11/12 py-5 px-5">
 	{@render children()}
 </div>
 
