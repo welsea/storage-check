@@ -56,7 +56,7 @@ export async function validateSessionToken(token: string): Promise<SessionValida
 	const row = await sql`
         SELECT user_session.id as session_id, user_session.user_id, user_session.expires_at, users.id, users.username FROM user_session INNER JOIN users ON users.id = user_session.user_id WHERE user_session.id = ${sessionId}
     `;
-	if (row === null) {
+	if (row === null || row.length === 0) {
 		return { session: null, user: null };
 	}
 
