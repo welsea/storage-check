@@ -5,7 +5,7 @@
 </script>
 
 <nav class="bg-black text-white px-3 flex justify-between items-baseline max-h-1/12">
-	<h1><a href="/">Storage!</a></h1>
+	<h1><a href="/">Storage!<span class="text-base italic">beta</span></a></h1>
 	{#if data.username}<p>hello, <a href="/user/{data.username}" class="underline">{data.username}</a></p>{/if}
 </nav>
 

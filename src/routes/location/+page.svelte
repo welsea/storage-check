@@ -127,7 +127,10 @@
 						/></label
 					>
 					<div class="text-right w-full mt-5">
-						<button type="submit" class="bg-black text-white">Save</button>
+						<button type="submit" class="bg-black text-white" onclick={() => {
+							edit = false;
+							preview = null;
+						}}>Save</button>
 						<button
 							class=""
 							onclick={() => {
@@ -158,7 +161,10 @@
 						/></label
 					>
 					<div class="text-right w-full mt-5">
-						<button type="submit" class="bg-black text-white">Save</button>
+						<button type="submit" class="bg-black text-white" onclick={() => {
+							add = false;
+							preview = null;
+						}}>Save</button>
 						<button
 							class=""
 							onclick={() => {
