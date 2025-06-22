@@ -7,6 +7,7 @@ async function handleImage(image: File, name: string) {
 	const arrayBuffer = await image.arrayBuffer();
 	const nodeBuffer = Buffer.from(arrayBuffer);
 	const processedImageBuffer = await sharp(nodeBuffer)
+		.rotate()
 		.resize(800)
 		.webp({ quality: 80 })
 		.toBuffer();
