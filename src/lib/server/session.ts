@@ -4,14 +4,17 @@
  */
 
 import postgres from 'postgres';
-import { DATABASE_URL } from '$env/static/private';
 import { encodeBase32LowerCaseNoPadding, encodeHexLowerCase } from '@oslojs/encoding';
 import { sha256 } from '@oslojs/crypto/sha2';
 import type { RequestEvent } from '@sveltejs/kit';
+import { DATABASE_URL as PRIVATE_DATABASE_URL } from '$env/static/private';
 
-const sql = postgres(process.env.DATABASE_URL || '', {
-	ssl: 'require', // Heroku requires SSL
-  });
+const databaseUrl = process.env.DATABASE_URL ?? PRIVATE_DATABASE_URL;
+const sql = postgres(databaseUrl, {
+  ssl: process.env.NODE_ENV === 'production' ? 'require' : false,
+});
+
+
 
 export function setSessionTokenCookie(event: RequestEvent, token: string, expiresAt: Date): void {
 	event.cookies.set('session', token, {

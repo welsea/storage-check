@@ -1,42 +1,46 @@
-import { genSalt, hash, compare } from 'bcrypt-ts';
-import * as userSession from '$lib/server/session';
-import type { RequestEvent } from '@sveltejs/kit';
+import { genSalt, hash, compare } from "bcrypt-ts";
+import * as userSession from "$lib/server/session";
+import type { RequestEvent } from "@sveltejs/kit";
+import { INVITATION_CODE } from "$env/static/private";
+import { DATABASE_URL as PRIVATE_DATABASE_URL } from '$env/static/private';
 import postgres from 'postgres';
-import {  INVITATION_CODE } from '$env/static/private';
 
-const sql = postgres(process.env.DATABASE_URL || '', {
-	ssl: 'require', // Heroku requires SSL
-  });
+const databaseUrl = process.env.DATABASE_URL ?? PRIVATE_DATABASE_URL;
+
+const sql = postgres(databaseUrl, {
+  ssl: process.env.NODE_ENV === 'production' ? 'require' : false,
+});
 
 export async function register(
 	code: FormDataEntryValue | null,
 	username: FormDataEntryValue | null,
 	pass: FormDataEntryValue | null
 ) {
-	if (code === null || code === '') {
+	if (code === null || code === "") {
 		return {
 			valid: false,
-			message: "Invitation code doesn't exist."
+			message: "Invitation code doesn't exist.",
 		};
 	}
 	if (code.toString() !== INVITATION_CODE) {
 		return {
 			valid: false,
-			message: "Invitation code doesn't exist."
+			message: "Invitation code doesn't exist.",
 		};
 	}
-	if (pass === null || pass === '' || username === null || username === '') {
+	if (pass === null || pass === "" || username === null || username === "") {
 		return {
 			valid: false,
-			message: 'Username or password cannot be empty.'
+			message: "Username or password cannot be empty.",
 		};
 	}
 
-	const user = await sql`SELECT * FROM users WHERE username = ${username.toString()}`;
+	const user =
+		await sql`SELECT * FROM users WHERE username = ${username.toString()}`;
 	if (user.length > 0) {
 		return {
 			valid: false,
-			message: 'Username should be unique.'
+			message: "Username should be unique.",
 		};
 	}
 
@@ -50,12 +54,12 @@ export async function register(
 				VALUES(${username},${result})
 		`;
 		return {
-			valid: true
+			valid: true,
 		};
 	} catch (error) {
 		return {
 			valid: false,
-			message: 'Unable to register.'
+			message: "Unable to register.",
 		};
 	}
 }
@@ -65,43 +69,43 @@ export async function login(
 	username: FormDataEntryValue | null,
 	password: FormDataEntryValue | null
 ) {
-	try {
-		if (username === null || password === null || username === '' || password === '') {
-			throw new Error('Username/password should not be empty');
-		}
-		const user = await sql`
+	if (
+		username === null ||
+		password === null ||
+		username === "" ||
+		password === ""
+	) {
+		throw new Error("Username/password should not be empty");
+	}
+	const user = await sql`
         SELECT * FROM users WHERE username = ${username.toString()}`;
 
-		if (user.length === 0) {
-			return {
-				valid: false,
-				message: "User doesn't exist"
-			};
-		}
-
-		const isValid = await compare(password.toString(), user[0].password);
-
-		if (!isValid) {
-			return {
-				valid: false,
-				message: "Password doesn't match with username"
-			};
-		}
-
-		const token = userSession.generateSessionToken();
-		const session = await userSession.createSession(token, user[0].id);
-
-		userSession.setSessionTokenCookie(event, token, session.expiresAt);
-		const data = {
-			valid: isValid,
-			username: username.toString(),
-			userid: user[0].id
+	if (user.length === 0) {
+		return {
+			valid: false,
+			message: "User doesn't exist",
 		};
-		return data;
-	} catch (error) {
-		console.log(error);
-		throw new Error('Login failed.');
 	}
+
+	const isValid = await compare(password.toString(), user[0].password);
+
+	if (!isValid) {
+		return {
+			valid: false,
+			message: "Password doesn't match with username",
+		};
+	}
+
+	const token = userSession.generateSessionToken();
+	const session = await userSession.createSession(token, user[0].id);
+
+	userSession.setSessionTokenCookie(event, token, session.expiresAt);
+	const data = {
+		valid: isValid,
+		username: username.toString(),
+		userid: user[0].id,
+	};
+	return data;
 }
 
 export async function logout(event: RequestEvent) {
@@ -117,18 +121,18 @@ export async function reset_password(
 ) {
 	if (!logged) {
 		// not logged in, need code
-		if (code === null || code === '' || code !== 'IWANTTORESETPLEASE') {
+		if (code === null || code === "" || code !== "IWANTTORESETPLEASE") {
 			return {
 				valid: false,
-				message: 'WRONG WORD.'
+				message: "WRONG WORD.",
 			};
 		}
 	}
 
-	if (username === null || username === '' || pass === null || pass === '') {
+	if (username === null || username === "" || pass === null || pass === "") {
 		return {
 			valid: false,
-			message: 'Empty value is not gonna work'
+			message: "Empty value is not gonna work",
 		};
 	}
 
@@ -141,7 +145,7 @@ export async function reset_password(
 	if (user.length === 0) {
 		return {
 			valid: false,
-			message: "User doesn't exist"
+			message: "User doesn't exist",
 		};
 	}
 
@@ -152,21 +156,24 @@ export async function reset_password(
 				UPDATE users SET password=${result} WHERE username = ${username}
 		`;
 		return {
-			valid: true
+			valid: true,
 		};
 	} catch (error) {
 		return {
 			valid: false,
-			message: 'Unable to reset password.'
+			message: "Unable to reset password.",
 		};
 	}
 }
 
-export async function reset_username(username: FormDataEntryValue | null, user_id: number) {
-	if (username === null || username === '') {
+export async function reset_username(
+	username: FormDataEntryValue | null,
+	user_id: number
+) {
+	if (username === null || username === "") {
 		return {
 			valid: false,
-			message: 'Username should not be empty.'
+			message: "Username should not be empty.",
 		};
 	}
 	username = username.toString();
@@ -175,12 +182,12 @@ export async function reset_username(username: FormDataEntryValue | null, user_i
 				UPDATE users SET username=${username} WHERE id = ${user_id}
 		`;
 		return {
-			valid: true
+			valid: true,
 		};
 	} catch (error) {
 		return {
 			valid: false,
-			message: 'Unable to reset username.'
+			message: "Unable to reset username.",
 		};
 	}
 }

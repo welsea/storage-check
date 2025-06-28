@@ -1,10 +1,11 @@
 import postgres from 'postgres';
-import { DATABASE_URL } from '$env/static/private';
-import type { Item } from './types';
+import { DATABASE_URL as PRIVATE_DATABASE_URL } from '$env/static/private';
 
-const sql = postgres(process.env.DATABASE_URL || '', {
-	ssl: 'require', // Heroku requires SSL
-  });
+const databaseUrl = process.env.DATABASE_URL ?? PRIVATE_DATABASE_URL;
+const sql = postgres(databaseUrl, {
+  ssl: process.env.NODE_ENV === 'production' ? 'require' : false,
+});
+
 
 export async function getUserName(id: FormDataEntryValue | null) {
 	if (id === null || id === '') {

@@ -13,9 +13,9 @@
 	{#if data.username}<p>hello, <a href="/user/{data.username}" class="underline">{data.username}</a></p>{/if}
 </nav>
 
-<div class="min-h-full md:min-h-11/12 py-5 px-5">
+<main class="min-h-full md:min-h-11/12 py-5 px-5">
 	{@render children()}
-</div>
+</main>
 
 <footer class="bg-gray-100 text-gray-600 py-5 text-center">
 	© 2025 Nisse Production. Code licensed under the MIT License.

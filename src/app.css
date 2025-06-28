@@ -34,6 +34,10 @@ body,html{
 	}
 
 	input{
-		@apply border border-gray-500 rounded-xs px-1
+		@apply border rounded-md px-1 py-1 border-gray-400
 	}
+}
+
+.button{
+	@apply border border-gray-400 rounded-sm px-2 border-black w-fit;
 }

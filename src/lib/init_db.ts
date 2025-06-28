@@ -1,12 +1,13 @@
-import postgres from 'postgres';
+import postgres from "postgres";
+import { DATABASE_URL as PRIVATE_DATABASE_URL } from '$env/static/private';
 
-const sql = postgres(process.env.DATABASE_URL || '', {
-	ssl: 'require', // Heroku requires SSL
-  });
-
+const databaseUrl = process.env.DATABASE_URL ?? PRIVATE_DATABASE_URL;
+const sql = postgres(databaseUrl, {
+  ssl: process.env.NODE_ENV === 'production' ? 'require' : false,
+});
 
 export async function initializeDatabase() {
-	console.log('⏳ Running DB init...');
+	console.log("⏳ Running DB init...");
 
 	await sql`
 	CREATE TABLE IF NOT EXISTS category (
@@ -57,5 +58,5 @@ export async function initializeDatabase() {
 
 	await sql.end();
 
-	console.log('✅ DB init done.');
+	console.log("✅ DB init done.");
 }
