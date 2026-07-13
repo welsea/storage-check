@@ -1,7 +1,7 @@
 export interface Item {
 	id: string;
 	item_id: string;
-	item_name: string;
+	name: string;
 	last_updated: any;
 	location_id: string;
 	quantity: number;
@@ -17,7 +17,18 @@ export interface LocationItem {
 }
 
 export interface EventLogItem {
-	action: 'DELETE' | 'UPDATE' | 'ADD';
+	action: "DELETE" | "UPDATE" | "ADD" | "MOVE";
 	target: string;
 	item: Item;
 }
+
+export interface EventLogCategory {
+	action: "DELETE" | "UPDATE" | "ADD" | "MOVE";
+	target: string;
+	item: CategoryItem;
+}
+export type CategoryItem = {
+	id: number;
+	location_id: number;
+	name: string;
+};

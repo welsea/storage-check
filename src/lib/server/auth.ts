@@ -1,20 +1,21 @@
 import { genSalt, hash, compare } from "bcrypt-ts";
 import * as userSession from "$lib/server/session";
 import type { RequestEvent } from "@sveltejs/kit";
-import { INVITATION_CODE } from "$env/static/private";
-import { DATABASE_URL as PRIVATE_DATABASE_URL } from '$env/static/private';
-import postgres from 'postgres';
+import { INVITATION_CODE, USERNAME } from "$env/static/private";
+import { DATABASE_URL as PRIVATE_DATABASE_URL } from "$env/static/private";
+import postgres from "postgres";
 
 const databaseUrl = process.env.DATABASE_URL ?? PRIVATE_DATABASE_URL;
+const username = process.env.USERNAME ?? USERNAME;
 
 const sql = postgres(databaseUrl, {
-  ssl: process.env.NODE_ENV === 'production' ? 'require' : false,
+	ssl: process.env.NODE_ENV === "production" ? "require" : false,
 });
 
 export async function register(
 	code: FormDataEntryValue | null,
 	username: FormDataEntryValue | null,
-	pass: FormDataEntryValue | null
+	pass: FormDataEntryValue | null,
 ) {
 	if (code === null || code === "") {
 		return {
@@ -35,8 +36,7 @@ export async function register(
 		};
 	}
 
-	const user =
-		await sql`SELECT * FROM users WHERE username = ${username.toString()}`;
+	const user = await sql`SELECT * FROM users WHERE username = ${username.toString()}`;
 	if (user.length > 0) {
 		return {
 			valid: false,
@@ -64,21 +64,12 @@ export async function register(
 	}
 }
 
-export async function login(
-	event: RequestEvent,
-	username: FormDataEntryValue | null,
-	password: FormDataEntryValue | null
-) {
-	if (
-		username === null ||
-		password === null ||
-		username === "" ||
-		password === ""
-	) {
-		throw new Error("Username/password should not be empty");
+export async function login(event: RequestEvent, password: FormDataEntryValue | null) {
+	if (password === null || password === "") {
+		throw new Error("Password should not be empty");
 	}
 	const user = await sql`
-        SELECT * FROM users WHERE username = ${username.toString()}`;
+        SELECT * FROM users WHERE username = 'lydia'`;
 
 	if (user.length === 0) {
 		return {
@@ -117,7 +108,7 @@ export async function reset_password(
 	logged: boolean,
 	code: FormDataEntryValue | null,
 	username: FormDataEntryValue | null,
-	pass: FormDataEntryValue | null
+	pass: FormDataEntryValue | null,
 ) {
 	if (!logged) {
 		// not logged in, need code
@@ -166,10 +157,7 @@ export async function reset_password(
 	}
 }
 
-export async function reset_username(
-	username: FormDataEntryValue | null,
-	user_id: number
-) {
+export async function reset_username(username: FormDataEntryValue | null, user_id: number) {
 	if (username === null || username === "") {
 		return {
 			valid: false,

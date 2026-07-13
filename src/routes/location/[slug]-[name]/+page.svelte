@@ -1,149 +1,90 @@
+<!---
+TODO:
+ -[ ] add 'move to x category' when a item already exist.
+ -[ ] add edit category name/ delete category
+-->
 <script lang="ts">
-	import type { Item, EventLogItem } from '$lib/server/types';
-	import CatSpeechLeft from '$lib/components/CatSpeechLeft.svelte';
-	import CatSpeechRight from '$lib/components/CatSpeechRight.svelte';
+	import type { Item, EventLogItem, CategoryItem } from "$lib/server/types";
+	import CatSpeechRight from "$lib/components/CatSpeechRight.svelte";
+	import TdesignSetting1 from "~icons/tdesign/setting-1";
+	import AddItem from "$lib/components/AddItem.svelte";
+	import { enhance } from "$app/forms";
 
 	let { data, form } = $props();
 
 	let category = $state<string>(data.categories[0].id);
-	let add_category = $state(false);
 
 	let message = $state<string | null>(null);
 
-	let add_item = $state<string>();
+	let exists = $derived<Item[]>(data.exists);
+	let needs = $derived<Item[]>(data.needs);
 
-	let exists = $state<Item[]>(data.exists);
-	let needs = $state<Item[]>(data.needs);
 	let edit = $state(false);
+	let open_popup = $state(false);
 
 	let eventLog = $state<EventLogItem[]>([]);
 
-	const types = ['exist', 'need'];
-
-	function addItem(e: any) {
-		const selectType = e.target.value;
-		if (add_item) {
-			let newItem: Item = {
-				id: (exists.length + 1).toString(),
-				item_id: '9999',
-				item_name: add_item,
-				last_updated: new Date().toLocaleString(),
-				location_id: data.location.id,
-				quantity: 1,
-				category_id: category
-			};
-			if (selectType === 'exist') {
-				const nameExist = exists.find((i) => i.item_name === add_item);
-				if (nameExist) {
-					message = `${newItem.item_name} already in the exist list!`;
-				} else {
-					exists = [...exists, newItem];
-					message = `${newItem.item_name} added in exist list!`;
-					eventLog = [
-						...eventLog,
-						{
-							action: 'ADD',
-							target: selectType,
-							item: newItem
-						}
-					];
-				}
-			} else {
-				const nameNeed = needs.find((i) => i.item_name === add_item);
-				newItem.id = (needs.length + 1).toString();
-				if (nameNeed) {
-					message = `${newItem.item_name} already in the need list!`;
-				} else {
-					needs = [...needs, newItem];
-					message = `${newItem.item_name} added in need list!`;
-					eventLog = [
-						...eventLog,
-						{
-							action: 'ADD',
-							target: selectType,
-							item: newItem
-						}
-					];
-				}
-			}
-		} else {
-			message = `Name cannot be empty`;
-		}
-		add_item = '';
-	}
+	const types = ["exist", "need"];
+	let categories = data.categories;
 
 	function deleteItem(target: string, item: Item) {
-		if (target === 'exist') {
-			exists = exists.filter((i) => i.item_name !== item.item_name);
+		if (target === "exist") {
+			exists = exists.filter((i) => i.name !== item.name);
 		} else {
-			needs = needs.filter((i) => i.item_name !== item.item_name);
+			needs = needs.filter((i) => i.name !== item.name);
 		}
 		eventLog = [
 			...eventLog,
 			{
-				action: 'DELETE',
+				action: "DELETE",
 				target: target,
-				item: item
-			}
+				item: item,
+			},
 		];
-		message = `${item.item_name} deleted from ${target} list!`;
+		message = `${item.name} deleted from ${target} list!`;
 	}
 
 	function MoveTo(target: string, item: Item) {
-		if (target === 'exist') {
+		let need = target === "need" ? "exist" : "need";
+		eventLog = [...eventLog, { action: "MOVE", target: need, item }];
+		if (target === "exist") {
 			// move to need, delete from exist
-			deleteItem(target, item);
-			const needing = needs.find((i) => i.item_name === item.item_name);
+			exists = exists.filter((i) => i.name !== item.name);
+			const needing = needs.find((i) => i.name === item.name);
 			if (needing) {
-				message = `${item.item_name} already in need list`;
+				message = `${item.name} already in need list`;
 			} else {
 				needs = [...needs, item];
-				eventLog = [
-					...eventLog,
-					{
-						action: 'ADD',
-						target: 'need',
-						item: item
-					}
-				];
 			}
 		} else {
-			deleteItem('need', item);
 			// Add to exists list or update quantity if already exists
-			const existingItem = exists.find((i) => i.item_name === item.item_name);
+			needs = needs.filter((i) => i.name !== item.name);
+			const existingItem = exists.find((i) => i.name === item.name);
 			if (existingItem) {
-				message = `${item.item_name} already in exist list`;
+				message = `${item.name} already in exist list`;
 			} else {
 				exists = [...exists, item];
-				eventLog = [
-					...eventLog,
-					{
-						action: 'ADD',
-						target: 'exist',
-						item: item
-					}
-				];
 			}
 		}
 
-		message = `${item.item_name} moved out from ${target} list!`;
+		message = `${item.name} moved out from ${target} list!`;
 	}
 
 	function updateQuantity(target: string, item: Item, e: any) {
 		if (Number(e.target.value) <= 0) {
-			message = 'Quantity needs to be bigger than 0';
+			message = "Quantity needs to be bigger than 0";
 		} else {
-			if (target === 'exist') {
+			if (target === "exist") {
 				exists = exists.map((i) => {
-					if (i.item_name === item.item_name) {
+					if (i.name === item.name) {
 						return { ...i, quantity: Number(e.target.value) };
 					}
 					return i;
 				});
 			} else {
-				message = '';
+				message = "";
 				needs = needs.map((i) => {
-					if (i.item_name === item.item_name) {
+					if (i.name === item.name) {
 						return { ...i, quantity: Number(e.target.value) };
 					}
 					return i;
@@ -152,14 +93,14 @@
 			eventLog = [
 				...eventLog,
 				{
-					action: 'UPDATE',
+					action: "UPDATE",
 					target: target,
-					item: { ...item, quantity: e.target.value }
-				}
+					item: { ...item, quantity: e.target.value },
+				},
 			];
 		}
 
-		// message = `${item.item_name} updated from ${target} list!`;
+		// message = `${item.name} updated from ${target} list!`;
 	}
 
 	function toggleEdit() {
@@ -167,233 +108,196 @@
 	}
 
 	function preventSubmit(e: KeyboardEvent) {
-		if (e.code === 'Enter') {
+		if (e.code === "Enter") {
 			e.preventDefault();
 		}
 	}
 </script>
 
-<div class="text-left"><a href="/location">{'< Go back to list'}</a></div>
+<div class="text-left text-gray-500"><a href="/location">{"< Go back to locations"}</a></div>
 
-
-<CatSpeechLeft message={`You're at ${data.location.name.toUpperCase()}`} />
-
-<p class="my-1 mx-5">* If you want to add category, do it before edit the lists : )</p>
+<div class="flex items-baseline justify-between">
+	<h1 class="mt-3 mb-5">{data.location.name.toUpperCase()}</h1>
+	<a href={`/category_edit/${data.location.id}-${data.location.name}`} class="underline text-md">Edit categories</a>
+</div>
 
 {#if form?.error}
 	<p class="error">{form.error}</p>
 {/if}
 
-<div class="mx-5">
+<div class="mx-1">
 	<!-- category -->
-	{#if add_category}
-		<div class="border border-dashed rounded-md px-3 py-2 mb-2">
-			<form method="POST" action="?/add_category" class="flex flex-col items-start md:flex-row md:items-center">
-				<label
-					>Category name: <input
-						name="name"
-						autocomplete="off"
-						onkeydown={(e) => preventSubmit(e)}
-					/></label
-				>
-				<button class="bg-black text-white my-1 md:mx-1" type="submit" onsubmit={() => (add_category = false)}
-					>Save</button
-				>
-				<button onclick={() => (add_category = false)}>Cancel</button>
-			</form>
-		</div>
-	{/if}
-	<div class="border-b border-black pb-1 mb-2 flex justify-start flex-wrap">
-		{#each data.categories as cate, i}
-			<button
-				class="{category === cate.id
-					? 'bg-black text-white'
-					: ''} mr-1 mt-1"
-				onclick={() => (category = cate.id)}>{cate.name.toUpperCase()}</button
-			>
-		{/each}
-		<button
-			class="border-green-900 text-green-900 mt-1"
-			onclick={() => (add_category = !add_category)}>+ Add category</button
-		>
+	<div class="flex flex-wrap w-full mt-3 gap-1 justify-end">
+		<select bind:value={category} class="border border-r-2 flex-1">
+			{#each data.categories as cate, i}
+				<option value={cate.id}>
+					{cate.name.toUpperCase()}
+				</option>
+			{/each}
+		</select>
+		<button onclick={() => (open_popup = true)}>+ Add item</button>
 	</div>
 
 	<!-- lists -->
-	<form method="POST" action="?/edit">
-		<div class="text-right">
-			<button class="bg-black text-white" type="button" onclick={toggleEdit}
-				>{edit ? 'Cancel' : 'Edit'}</button
-			>
-			<button
-				type="submit"
-				onclick={() => {
-					edit = false;
-					message = null;
-				}}>Save</button
-			>
-		</div>
-
-		{#if edit}
-			<div
-				class="py-4 mb-2 flex flex-wrap justify-center items-baseline border-b border-gray-300 md:border-none"
-			>
-				<label>
-					Add a item: <input onkeydown={(e) => preventSubmit(e)} bind:value={add_item} />
-				</label>
-				{#each types as item}
-					<label
-						class={`ml-2 mt-2 px-2 py-1 rounded-sm ${'exist' === item ? 'bg-black text-white' : 'border border-black'}`}
-					>
-						<input
-							class="hidden"
-							type="radio"
-							value={item}
-							aria-label={item === 'exist' ? 'Have it!' : 'Need it!'}
-							onclick={(e) => addItem(e)}
-						/>
-						{item === 'exist' ? 'Have it!' : 'Need it!'}
-					</label>
-				{/each}
+	<div class="py-2">
+		<form method="POST" action="?/edit" use:enhance>
+			<div class="text-right">
+				<button class="bg-black text-white" type="button" onclick={toggleEdit}>
+					{edit ? "Cancel" : "Edit"}
+				</button>
+				<button
+					type="submit"
+					class={edit ? "" : "hidden"}
+					onclick={() => {
+						edit = false;
+						message = null;
+					}}
+				>
+					Save
+				</button>
 			</div>
-		{/if}
 
-		{#if message}
-			<p class="text-center italic text-blue-600">* {message}</p>
-		{/if}
-		<!-- hidden-->
-		<input type="hidden" name="location_id" value={data.location.id} />
-		<input type="hidden" name="user_id" value={data.userid} />
-		<input type="hidden" name="events" value={JSON.stringify(eventLog)} />
+			{#if message}
+				<p class="text-center italic text-blue-600">* {message}</p>
+			{/if}
+			<!-- hidden-->
+			<input type="hidden" name="location_id" value={data.location.id} />
+			<input type="hidden" name="user_id" value={data.userid} />
+			<input type="hidden" name="events" value={JSON.stringify(eventLog)} />
 
-		<!-- list -->
-		<div class="flex justify-around flex-wrap w-full mb-10">
-			<div class="md:basis-2/5 w-full mt-3 border px-5 py-3 rounded-t-md">
-				<h4 class="text-lg text-center italic">Exist</h4>
-				{#if exists.filter((e) => e.category_id == category).length === 0}
-					<li class="text-gray-500 italic">No items</li>
-				{:else}
-					<table class="w-full">
-						<thead>
-							<tr class="text-left border-b">
-								<th class="pb-2">Name</th>
-								<th class="pb-2 text-center">Qty</th>
-								{#if edit}
-									<th class="pb-2 text-right">Actions</th>
-								{/if}
-							</tr>
-						</thead>
-						<tbody>
-							{#each exists.filter((e) => e.category_id == category) as item}
-								<tr class="border-b last:border-0">
-									<td class="py-2">{item.item_name}</td>
-									<td class="py-2 text-center">
-										{#if edit}
-											<input
-												type="number"
-												name="quantity"
-												value={Number(item.quantity)}
-												class="w-12"
-												onchange={(e) => updateQuantity('exist', item, e)}
-												onkeydown={(e) => preventSubmit(e)}
-											/>
-										{:else}
-											{Number(item.quantity) || 1}
-										{/if}
-									</td>
-									{#if edit}
-										<td class="py-2 text-right">
-											<button
-												type="button"
-												class="text-sm mr-1"
-												onclick={() => deleteItem('exist', item)}
-											>
-												Delete
-											</button>
-											<button
-												type="button"
-												class="text-white bg-black text-sm"
-												onclick={() => MoveTo('exist', item)}
-											>
-												Need it
-											</button>
+			<!-- list -->
+			<div class="flex justify-around flex-wrap w-full mb-10">
+				<div class="md:basis-2/5 w-full mt-3 border px-5 py-1 rounded-t-md">
+					<h4 class="text-lg text-center italic font-bold">Exist</h4>
+					{#if exists.filter((e) => e.category_id == category).length === 0}
+						<li class="text-gray-500 italic">No items</li>
+					{:else}
+						<table class="w-full">
+							<tbody>
+								{#each exists.filter((e) => e.category_id == category) as item}
+									<tr class="border-b last:border-0">
+										<td class="py-2">{item.name}</td>
+										<td class="py-2 text-center">
+											{#if edit}
+												<input
+													type="number"
+													name="quantity"
+													value={Number(item.quantity)}
+													class="w-12"
+													onchange={(e) => updateQuantity("exist", item, e)}
+													onkeydown={(e) => preventSubmit(e)}
+												/>
+											{:else}
+												{Number(item.quantity) || 1}
+											{/if}
 										</td>
-									{/if}
-								</tr>
-							{/each}
-						</tbody>
-					</table>
-				{/if}
-			</div>
-
-			<div class="md:basis-2/5 mt-3 w-full border px-5 py-3 rounded-t-md">
-				<h4 class="text-lg text-center italic">Need</h4>
-				{#if needs.filter((e) => e.category_id == category).length === 0}
-					<li class="text-gray-500 italic">No items</li>
-				{:else}
-					<table class="w-full">
-						<thead>
-							<tr class="text-left border-b">
-								<th class="pb-2">Name</th>
-								<th class="pb-2 text-center">Qty</th>
-								{#if edit}
-									<th class="pb-2 text-right">Actions</th>
-								{/if}
-							</tr>
-						</thead>
-						<tbody>
-							{#each needs.filter((e) => e.category_id == category) as item}
-								<tr class="border-b last:border-0">
-									<td class="py-2">{item.item_name}</td>
-									<td class="py-2 text-center">
 										{#if edit}
-											<input
-												type="number"
-												name="quantity"
-												value={Number(item.quantity)}
-												class="w-12"
-												onchange={(e) => updateQuantity('need', item, e)}
-												onkeydown={(e) => preventSubmit(e)}
-											/>
-										{:else}
-											{Number(item.quantity) || 1}
+											<td class="flex flex-col button-sm py-3 ml-2">
+												<button
+													type="button"
+													class="text-sm mr-1"
+													onclick={() => deleteItem("exist", item)}
+												>
+													Delete
+												</button>
+												<button
+													type="button"
+													class="text-white bg-black text-sm"
+													onclick={() => MoveTo("exist", item)}
+												>
+													Need it
+												</button>
+											</td>
 										{/if}
-									</td>
-									{#if edit}
-										<td class="py-2 text-right">
-											<button
-												type="button"
-												class="text-sm mr-1"
-												onclick={() => deleteItem('need', item)}
-											>
-												Delete
-											</button>
-											<button
-												type="button"
-												class="text-white bg-black text-sm"
-												onclick={() => MoveTo('need', item)}
-											>
-												<!-- <TdesignArrowLeft /> -->
-												Got it
-											</button>
+									</tr>
+								{/each}
+							</tbody>
+						</table>
+					{/if}
+				</div>
+
+				<div class="md:basis-2/5 mt-3 w-full border px-5 py-3 rounded-t-md">
+					<h4 class="text-lg text-center italic font-bold">Need</h4>
+					{#if needs.filter((e) => e.category_id == category).length === 0}
+						<li class="text-gray-500 italic">No items</li>
+					{:else}
+						<table class="w-full">
+							<tbody>
+								{#each needs.filter((e) => e.category_id == category) as item}
+									<tr class="border-b last:border-0">
+										<td class="py-2">{item.name}</td>
+										<td class="py-2 text-center">
+											{#if edit}
+												<input
+													type="number"
+													name="quantity"
+													value={Number(item.quantity)}
+													class="w-12"
+													onchange={(e) => updateQuantity("need", item, e)}
+													onkeydown={(e) => preventSubmit(e)}
+												/>
+											{:else}
+												{Number(item.quantity) || 1}
+											{/if}
 										</td>
-									{/if}
-								</tr>
-							{/each}
-						</tbody>
-					</table>
-				{/if}
+										{#if edit}
+											<td class="flex flex-col button-sm py-3 ml-2">
+												<button
+													type="button"
+													class="text-sm mr-1"
+													onclick={() => deleteItem("need", item)}
+												>
+													Delete
+												</button>
+												<button
+													type="button"
+													class="text-white bg-black text-sm"
+													onclick={() => MoveTo("need", item)}
+												>
+													<!-- <TdesignArrowLeft /> -->
+													Have it
+												</button>
+											</td>
+										{/if}
+									</tr>
+								{/each}
+							</tbody>
+						</table>
+					{/if}
+				</div>
 			</div>
-		</div>
-	</form>
+		</form>
+	</div>
 </div>
 
 <CatSpeechRight
-	message={`Last time updated by <b>${data.location.last_updated_by}</b> at
+	message={`Last time updated at
 		<b>${data.location.last_updated}</b>`}
+/>
+
+<AddItem
+	bind:open={open_popup}
+	current_category={category}
+	categories={data.categories}
+	userid={data.userid}
+	location_id={data.location.id}
 />
 
 <style lang="postcss">
 	@reference "tailwindcss";
+	.pop-up {
+		width: fit-content;
+		position: absolute;
+		float: left;
+		background-color: var(--bpx-aux-float-bg, #fff);
+		border: 1px solid #e5e9ef;
+		border: 1px solid var(--bpx-aux-float-border, #e5e9ef);
+		border-radius: 4px;
+		-webkit-box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.14);
+		box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.14);
+		position: absolute;
+		z-index: 1;
+	}
 	.speech-bubble-right {
 		position: relative;
 		background: black;
@@ -402,7 +306,7 @@
 	}
 
 	.speech-bubble-right:after {
-		content: '';
+		content: "";
 		position: absolute;
 		left: 0;
 		top: 50%;
@@ -423,7 +327,7 @@
 	}
 
 	.speech-bubble-left:before {
-		content: ' ';
+		content: " ";
 		position: absolute;
 		width: 0;
 		height: 0;
@@ -437,7 +341,7 @@
 	}
 
 	.speech-bubble-left:after {
-		content: ' ';
+		content: " ";
 		position: absolute;
 		width: 0;
 		height: 0;

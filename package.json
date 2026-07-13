@@ -4,8 +4,8 @@
 	"version": "0.0.1",
 	"type": "module",
 	"engines": {
-		"node": "22.0.0",
-		"pnpm": "10.10.0"
+		"node": "25.6.0",
+		"pnpm": "11.12.0"
 	},
 	"scripts": {
 		"dev": "vite dev",
@@ -19,18 +19,18 @@
 		"start": "node build/index.js"
 	},
 	"devDependencies": {
-		"@iconify-json/tdesign": "^1.2.8",
+		"@iconify-json/tdesign": "^1.2.14",
 		"@sveltejs/adapter-auto": "^4.0.0",
-		"@sveltejs/adapter-node": "^5.2.12",
-		"@sveltejs/kit": "^2.21.2",
-		"@sveltejs/vite-plugin-svelte": "^5.1.0",
-		"postgres": "^3.4.7",
-		"prettier": "^3.5.3",
-		"prettier-plugin-svelte": "^3.4.0",
-		"svelte": "^5.33.18",
-		"svelte-check": "^4.2.1",
-		"typescript": "^5.8.3",
-		"vite": "^6.3.5"
+		"@sveltejs/adapter-node": "^5.5.7",
+		"@sveltejs/kit": "^2.69.2",
+		"@sveltejs/vite-plugin-svelte": "^5.1.1",
+		"postgres": "^3.4.9",
+		"prettier": "^3.9.5",
+		"prettier-plugin-svelte": "^3.5.2",
+		"svelte": "^5.56.4",
+		"svelte-check": "^4.7.2",
+		"typescript": "^5.9.3",
+		"vite": "^6.4.3"
 	},
 	"pnpm": {
 		"onlyBuiltDependencies": [
@@ -38,14 +38,14 @@
 		]
 	},
 	"dependencies": {
-		"@aws-sdk/client-s3": "^3.826.0",
+		"@aws-sdk/client-s3": "^3.1085.0",
 		"@oslojs/crypto": "^1.0.1",
 		"@oslojs/encoding": "^1.1.0",
-		"@tailwindcss/vite": "^4.1.8",
+		"@tailwindcss/vite": "^4.3.2",
 		"bcrypt-ts": "^6.0.0",
-		"dotenv": "^16.5.0",
-		"sharp": "^0.34.2",
-		"tailwindcss": "^4.1.8",
-		"unplugin-icons": "^22.1.0"
+		"dotenv": "^16.6.1",
+		"sharp": "^0.34.5",
+		"tailwindcss": "^4.3.2",
+		"unplugin-icons": "^22.5.0"
 	}
 }

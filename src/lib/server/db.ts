@@ -1,10 +1,10 @@
-import postgres from 'postgres';
-import type { Item, LocationItem } from './types';
-import { DATABASE_URL as PRIVATE_DATABASE_URL } from '$env/static/private';
+import postgres from "postgres";
+import type { CategoryItem, Item, LocationItem } from "./types";
+import { DATABASE_URL as PRIVATE_DATABASE_URL } from "$env/static/private";
 
 const databaseUrl = process.env.DATABASE_URL ?? PRIVATE_DATABASE_URL;
 const sql = postgres(databaseUrl, {
-  ssl: process.env.NODE_ENV === 'production' ? 'require' : false,
+	ssl: process.env.NODE_ENV === "production" ? "require" : false,
 });
 
 export async function getLocations(): Promise<LocationItem[]> {
@@ -12,13 +12,16 @@ export async function getLocations(): Promise<LocationItem[]> {
 	return locations;
 }
 
-export async function getCategory() {
-	const categories = await sql`SELECT * FROM category`;
+// Category now belongs to a location, so this needs a location_id.
+export async function getCategory(location_id: FormDataEntryValue | number): Promise<CategoryItem[]> {
+	const categories: CategoryItem[] = await sql`
+		SELECT * FROM category WHERE location_id = ${Number(location_id)}
+	`;
 	return categories;
 }
 
 export async function addLocation(name: string, cover: string, userid: number) {
-	if (name === null || name === '') {
+	if (name === null || name === "") {
 		throw new Error("Name shouldn't be empty.");
 	}
 	try {
@@ -28,130 +31,169 @@ export async function addLocation(name: string, cover: string, userid: number) {
             `;
 	} catch (error) {
 		console.log(error);
-		throw new Error('Failed to add location.');
+		throw new Error("Failed to add location.");
 	}
 }
 
 export async function updateLocationCover(id: string, name: string, cover: string, userid: number) {
-	if (name === null || name === '') {
+	if (name === null || name === "") {
 		throw new Error("Name shouldn't be empty.");
 	}
 	try {
 		await sql`UPDATE locations SET cover = ${cover}, last_updated = ${new Date(Date.now())},name=${name},last_updated_by=${userid} WHERE id=${id}`;
 	} catch (error) {
 		console.log(error);
-		throw new Error('Failed to add location.');
+		throw new Error("Failed to add location.");
 	}
 }
 
-export async function addCategory(name: FormDataEntryValue | null) {
-	if (name !== null && name !== '') {
+// Category also needs a location_id now.
+export async function addCategory(location_id: Number | null, name: string | null) {
+	if (location_id === null) {
+		throw new Error("Location is required.");
+	}
+	if (name !== null && name !== "") {
 		try {
 			await sql`
-				INSERT INTO category(name)
-				VALUES (${name.toString()})
+				INSERT INTO category(location_id, name)
+				VALUES (${Number(location_id)}, ${name.toString()})
+				ON CONFLICT (location_id, name) DO NOTHING
 				`;
 		} catch (error) {
 			console.log(error);
-			throw new Error('Failed to add location.');
+			throw new Error("Failed to add category.");
 		}
 	}
 }
 
-export async function getList(
-	location_id: FormDataEntryValue
-): Promise<{ exist: Item[]; need: Item[] }> {
+export async function deleteCategory(location_id: number | null, id: number | null) {
+	if (location_id === null) {
+		throw new Error("Location is required.");
+	}
+	if (id !== null) {
+		try {
+			await sql`
+			DELETE FROM category
+			WHERE id = ${Number(id)}
+			  AND location_id = ${Number(location_id)}
+		`;
+		} catch (error) {
+			console.log(error);
+			throw new Error("Failed to delete category.");
+		}
+	}
+}
+
+export async function updateCategory(location_id: number | null, name: string | null, id: Number | null) {
+	if (location_id === null) {
+		throw new Error("Location is required.");
+	}
+	if (id !== null) {
+		try {
+			await sql`
+			UPDATE category
+			SET name = ${name}
+			WHERE id = ${Number(id)}
+			  AND location_id = ${Number(location_id)}
+		`;
+		} catch (error) {
+			console.log(error);
+			throw new Error("Failed to delete category.");
+		}
+	}
+}
+
+// No more join to a separate items table with exist_items/need_items —
+// items now carry location_id, category_id, and is_need directly.
+export async function getList(location_id: FormDataEntryValue): Promise<{ exist: Item[]; need: Item[] }> {
 	try {
 		let exist: Item[] = await sql`
-                SELECT 
-					e.*, 
-					i.name AS item_name, 
-					i.category_id
-				FROM exist_items e
-				JOIN items i ON e.item_id = i.id
-                WHERE e.location_id = ${Number(location_id)};`;
+			SELECT * FROM items
+			WHERE location_id = ${Number(location_id)} AND is_need = FALSE;
+		`;
 		let need: Item[] = await sql`
-                SELECT 
-					e.*, 
-					i.name AS item_name, 
-					i.category_id
-				FROM need_items e
-				JOIN items i ON e.item_id = i.id
-                WHERE e.location_id = ${Number(location_id)}; 
-        `;
+			SELECT * FROM items
+			WHERE location_id = ${Number(location_id)} AND is_need = TRUE;
+		`;
 		exist = exist.sort((a, b) => a.last_updated - b.last_updated);
 		need = need.sort((a, b) => a.last_updated - b.last_updated);
 		return {
 			exist,
-			need
+			need,
 		};
 	} catch (error) {
 		console.log(error);
-		throw new Error('Failed to get list.');
+		throw new Error("Failed to get list.");
 	}
 }
 
-export async function getAllItems() {
+// Renamed conceptually from getAllItems -> items are per-location now, not global.
+export async function getItems(location_id: FormDataEntryValue) {
 	try {
 		const list = await sql`
-        SELECT * FROM items 
-        `;
+			SELECT * FROM items WHERE location_id = ${Number(location_id)}
+		`;
 		return list;
 	} catch (error) {
 		console.log(error);
-		throw new Error('Failed to get items.');
+		throw new Error("Failed to get items.");
 	}
 }
 
+// Items are unique per (location_id, name, is_need) — no more global items
+// table + separate exist/need join tables. One insert does it all.
 export async function addItem(
 	target: FormDataEntryValue | null,
 	location_id: FormDataEntryValue | null,
 	name: FormDataEntryValue | null,
 	category_id: FormDataEntryValue | null,
-	quantity: FormDataEntryValue | null
+	quantity: FormDataEntryValue | number,
 ) {
-	if (location_id === null || name === null || name === '') {
-		throw new Error('Name should not be empty');
+	if (location_id === null || name === null || name === "") {
+		throw new Error("Name should not be empty");
 	}
+	const is_need = target === "need";
 	try {
 		await sql`
-		   WITH upsert_attempt AS (
-				INSERT INTO items(name,category_id)
-				VALUES (${name.toString()},${Number(category_id)})
-				ON CONFLICT(name) DO NOTHING
-				RETURNING id
-			),
-			get_item_id AS (
-				SELECT id FROM upsert_attempt
-				UNION ALL
-				SELECT id FROM items WHERE name = ${name.toString()} AND NOT EXISTS (SELECT 1 FROM upsert_attempt)
+			INSERT INTO items (location_id, category_id, name, quantity, is_need, last_updated)
+			VALUES (
+				${Number(location_id)},
+				${Number(category_id)},
+				${name.toString()},
+				${Number(quantity)},
+				${is_need},
+				${new Date(Date.now())}
 			)
-			INSERT INTO ${target === 'exist' ? sql('exist_items') : sql('need_items')} (location_id, quantity, item_id)
-			SELECT ${Number(location_id)},${Number(quantity)},id FROM get_item_id
-			ON CONFLICT (location_id, item_id) DO NOTHING
+			ON CONFLICT (location_id, name, is_need) DO NOTHING
 			RETURNING *;
 		`;
 	} catch (error) {
 		console.log(error);
-		throw new Error('Add item failed');
+		throw new Error("Add item failed");
 	}
 }
 
+// item_id is now the items.id directly — no item_id/location_id pair needed
+// on a separate join table, but we still scope by location_id for safety.
 export async function deleteItem(
 	target: FormDataEntryValue | null,
 	location_id: FormDataEntryValue | null,
-	item_id: FormDataEntryValue | null
+	item_id: FormDataEntryValue | null,
 ) {
 	if (location_id === null || item_id === null) {
-		throw new Error('Unable to delete this item.');
+		throw new Error("Unable to delete this item.");
 	}
+	const is_need = target === "need";
 	try {
 		await sql`
-		DELETE FROM ${target === 'exist' ? sql('exist_items') : sql('need_items')} WHERE location_id = ${Number(location_id)} AND item_id=${Number(item_id)}
-	`;
+			DELETE FROM items
+			WHERE id = ${Number(item_id)}
+			  AND location_id = ${Number(location_id)}
+			  AND is_need = ${is_need}
+		`;
 	} catch (error) {
 		console.log(error);
-		throw new Error('Failed to delete a item');
+		throw new Error("Failed to delete a item");
 	}
 }
 
@@ -160,26 +202,90 @@ export async function updateItem(
 	location_id: FormDataEntryValue | null,
 	item_id: FormDataEntryValue | null,
 	item_name: FormDataEntryValue | null,
-	quantity: FormDataEntryValue | null
+	quantity: FormDataEntryValue | null,
 ) {
 	if (location_id === null || item_id === null) {
-		throw new Error('Unable to delete this item.');
+		throw new Error("Unable to update this item.");
 	}
+	const is_need = target === "need";
 	try {
-		if (item_id === '9999') {
-			const ids = await sql`SELECT id FROM items where name = ${item_name!.toString()} `;
+		if (item_id === "9999") {
+			const ids = await sql`
+				SELECT id FROM items
+				WHERE name = ${item_name!.toString()}
+				  AND location_id = ${Number(location_id)}
+				  AND is_need = ${is_need}
+			`;
 			item_id = ids.length > 0 ? ids[0].id : item_id;
 		}
 		const result = await sql`
-		UPDATE ${target === 'exist' ? sql('exist_items') : sql('need_items')} SET quantity = ${Number(quantity)} WHERE location_id = ${Number(location_id)} AND item_id=${Number(item_id)}
-	`;
+			UPDATE items
+			SET quantity = ${Number(quantity)}, last_updated = ${new Date(Date.now())}
+			WHERE id = ${Number(item_id)}
+			  AND location_id = ${Number(location_id)}
+			  AND is_need = ${is_need}
+		`;
 		console.log(result);
 	} catch (error) {
 		console.log(error);
-		throw new Error('Failed to delete a item');
+		throw new Error("Failed to update a item");
 	}
 }
 
-export async function updateLocation(userid: number, location_id: number) {
-	await sql`UPDATE locations SET last_updated_by = ${userid}, last_updated = ${new Date(Date.now())} WHERE id=${location_id}`;
+export async function moveItem(
+	target: FormDataEntryValue | null,
+	location_id: FormDataEntryValue | null,
+	item_id: FormDataEntryValue | null,
+	item_name: FormDataEntryValue | null,
+	quantity: FormDataEntryValue | null,
+) {
+	if (location_id === null || item_id === null) {
+		throw new Error("Unable to move this item.");
+	}
+	const is_need = target === "need";
+	try {
+		console.log(`
+			UPDATE items
+			SET is_need = ${is_need}, last_updated = ${new Date(Date.now())}
+			WHERE id = ${Number(item_id)}
+			  AND location_id = ${Number(location_id)}
+			  AND is_need = ${!is_need}
+		`);
+		const result = await sql`
+			UPDATE items
+			SET is_need = ${is_need}, last_updated = ${new Date(Date.now())}
+			WHERE id = ${Number(item_id)}
+			  AND location_id = ${Number(location_id)}
+			  AND is_need = ${!is_need}
+		`;
+		console.log(result);
+	} catch (error) {
+		console.log(error);
+		throw new Error("Failed to update a item");
+	}
+}
+// New: moving an item to a different category is just this — no delete/re-insert
+// required, since category_id isn't part of the uniqueness constraint.
+export async function updateItemCategory(
+	location_id: FormDataEntryValue | null,
+	item_id: FormDataEntryValue | null,
+	category_id: FormDataEntryValue | null,
+) {
+	if (location_id === null || item_id === null || category_id === null) {
+		throw new Error("Unable to move this item.");
+	}
+	try {
+		await sql`
+			UPDATE items
+			SET category_id = ${Number(category_id)}, last_updated = ${new Date(Date.now())}
+			WHERE id = ${Number(item_id)} AND location_id = ${Number(location_id)}
+		`;
+	} catch (error) {
+		console.log(error);
+		throw new Error("Failed to move item to new category");
+	}
+}
+
+export async function updateLocation(location_id: number) {
+	await sql`UPDATE locations SET last_updated = ${new Date(Date.now())} WHERE id=${location_id}`;
 }
