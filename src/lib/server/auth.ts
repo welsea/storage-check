@@ -69,7 +69,7 @@ export async function login(event: RequestEvent, password: FormDataEntryValue | 
 		throw new Error("Password should not be empty");
 	}
 	const user = await sql`
-        SELECT * FROM users WHERE username = 'lydia'`;
+        SELECT * FROM users WHERE username = ${USERNAME}`;
 
 	if (user.length === 0) {
 		return {

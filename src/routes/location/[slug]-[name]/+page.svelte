@@ -9,6 +9,7 @@ TODO:
 	import TdesignSetting1 from "~icons/tdesign/setting-1";
 	import AddItem from "$lib/components/AddItem.svelte";
 	import { enhance } from "$app/forms";
+	import { invalidateAll, refreshAll } from "$app/navigation";
 
 	let { data, form } = $props();
 
@@ -103,7 +104,10 @@ TODO:
 		// message = `${item.name} updated from ${target} list!`;
 	}
 
-	function toggleEdit() {
+	async function toggleEdit() {
+		if (edit) await invalidateAll();
+		message = "";
+		eventLog = [];
 		edit = !edit;
 	}
 
